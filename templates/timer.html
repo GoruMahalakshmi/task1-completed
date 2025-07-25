@@ -1,0 +1,284 @@
+{% extends "base.html" %}
+
+{% block title %}Timer - Productivity Tracker{% endblock %}
+
+{% block extra_head %}
+<style>
+    .timer-container {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 15px;
+        color: white;
+        text-align: center;
+        padding: 3rem 2rem;
+    }
+    
+    .timer-display {
+        font-family: 'Courier New', monospace;
+        font-size: 4rem;
+        font-weight: bold;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        margin: 2rem 0;
+    }
+    
+    .task-info {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+        padding: 1rem;
+        margin: 1rem 0;
+    }
+    
+    .timer-controls .btn {
+        margin: 0.5rem;
+        min-width: 120px;
+    }
+    
+    @media (max-width: 768px) {
+        .timer-display {
+            font-size: 2.5rem;
+        }
+        
+        .timer-container {
+            padding: 2rem 1rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <h1 class="text-center mb-4">
+            <i class="fas fa-stopwatch me-2"></i>Time Tracker
+        </h1>
+        
+        <!-- Timer Container -->
+        <div class="timer-container">
+            {% if active_entry %}
+            <!-- Active Timer Display -->
+            <div class="active-timer">
+                <h3><i class="fas fa-play-circle me-2"></i>Timer Running</h3>
+                <div class="task-info">
+                    <h5 id="current-task">{{ active_entry.task.title }}</h5>
+                    <small>Started at {{ active_entry.start_time.strftime('%H:%M') }}</small>
+                </div>
+                <div class="timer-display" id="timer-display">00:00:00</div>
+                
+                <div class="timer-controls">
+                    <form method="POST" action="{{ url_for('stop_timer') }}" class="d-inline" id="timer-form">
+                        <button type="submit" class="btn btn-danger btn-lg">
+                            <i class="fas fa-stop me-2"></i>Stop Timer
+                        </button>
+                    </form>
+                </div>
+            </div>
+            {% else %}
+            <!-- Start Timer Interface -->
+            <div class="start-timer">
+                <h3><i class="fas fa-clock me-2"></i>Ready to Track Time</h3>
+                <div class="timer-display" id="timer-display">00:00:00</div>
+                
+                <form method="POST" action="{{ url_for('start_timer') }}" id="timer-form">
+                    <div class="mb-4">
+                        <label for="task-select" class="form-label h5">Select a Task:</label>
+                        <select name="task_id" id="task-select" class="form-select form-select-lg" required>
+                            <option value="">Choose a task to track time...</option>
+                            {% for task in tasks %}
+                            <option value="{{ task.id }}">
+                                {{ task.title }}
+                                {% if task.category %}({{ task.category.name }}){% endif %}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="timer-controls">
+                        <button type="submit" class="btn btn-success btn-lg" id="start-timer-btn">
+                            <i class="fas fa-play me-2"></i>Start Timer
+                        </button>
+                    </div>
+                </form>
+            </div>
+            {% endif %}
+        </div>
+        
+        {% if not tasks %}
+        <!-- No Tasks Available -->
+        <div class="text-center mt-4">
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>
+                You need to create some tasks before you can start tracking time.
+            </div>
+            <a href="{{ url_for('new_task') }}" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>Create Your First Task
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row mt-5">
+    <div class="col-lg-6 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-bolt me-2"></i>Quick Actions
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('new_task') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-plus me-2"></i>Add New Task
+                    </a>
+                    <a href="{{ url_for('tasks') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-list me-2"></i>Manage Tasks
+                    </a>
+                    <a href="{{ url_for('analytics') }}" class="btn btn-outline-info">
+                        <i class="fas fa-chart-bar me-2"></i>View Time Analytics
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Time Entries -->
+{% if active_entry %}
+<div class="row mt-5">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-history me-2"></i>Tips for Effective Time Tracking
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-lightbulb text-warning me-2"></i>Best Practices:</h6>
+                        <ul class="list-unstyled">
+                            <li class="mb-2">
+                                <i class="fas fa-check text-success me-2"></i>
+                                Start the timer before beginning work
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-check text-success me-2"></i>
+                                Focus on one task at a time
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-check text-success me-2"></i>
+                                Take regular breaks to stay productive
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-target text-info me-2"></i>Remember to:</h6>
+                        <ul class="list-unstyled">
+                            <li class="mb-2">
+                                <i class="fas fa-check text-success me-2"></i>
+                                Stop the timer when taking breaks
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-check text-success me-2"></i>
+                                Review your time logs regularly
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-check text-success me-2"></i>
+                                Use categories to organize your work
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/timer.js') }}"></script>
+<script>
+{% if active_entry %}
+// Initialize active timer display
+document.addEventListener('DOMContentLoaded', function() {
+    const startTime = new Date('{{ active_entry.start_time.isoformat() }}');
+    const timerDisplay = document.getElementById('timer-display');
+    
+    function updateTimer() {
+        const now = new Date();
+        const elapsed = Math.floor((now - startTime) / 1000);
+        
+        const hours = Math.floor(elapsed / 3600);
+        const minutes = Math.floor((elapsed % 3600) / 60);
+        const seconds = elapsed % 60;
+        
+        timerDisplay.textContent = 
+            `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    }
+    
+    // Update immediately and then every second
+    updateTimer();
+    setInterval(updateTimer, 1000);
+    
+    // Add visual indicator for running timer
+    timerDisplay.style.animation = 'pulse 2s infinite';
+    
+    // Add CSS for pulse animation
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+    `;
+    document.head.appendChild(style);
+});
+{% endif %}
+
+// Form submission handling
+document.getElementById('timer-form').addEventListener('submit', function(e) {
+    const submitBtn = this.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing...';
+    submitBtn.disabled = true;
+    
+    // Re-enable button after a delay if something goes wrong
+    setTimeout(() => {
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+    }, 5000);
+});
+
+// Task selection handling
+{% if not active_entry %}
+document.getElementById('task-select').addEventListener('change', function() {
+    const startBtn = document.getElementById('start-timer-btn');
+    if (this.value) {
+        startBtn.disabled = false;
+        startBtn.classList.remove('btn-secondary');
+        startBtn.classList.add('btn-success');
+    } else {
+        startBtn.disabled = true;
+        startBtn.classList.remove('btn-success');
+        startBtn.classList.add('btn-secondary');
+    }
+});
+
+// Initially disable start button if no task selected
+document.addEventListener('DOMContentLoaded', function() {
+    const taskSelect = document.getElementById('task-select');
+    const startBtn = document.getElementById('start-timer-btn');
+    
+    if (!taskSelect.value) {
+        startBtn.disabled = true;
+        startBtn.classList.remove('btn-success');
+        startBtn.classList.add('btn-secondary');
+    }
+});
+{% endif %}
+</script>
+{% endblock %}
+
