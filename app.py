@@ -11,7 +11,6 @@ logging.basicConfig(level=logging.DEBUG)
 
 class Base(DeclarativeBase):
     pass
-
 # Initialize database
 db = SQLAlchemy(model_class=Base)
 
