@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+
+{% block title %}Welcome - Productivity Tracker{% endblock %}
+
+{% block content %}
+<div class="hero-section bg-primary text-white py-5 mb-5 rounded">
+    <div class="container text-center">
+        <h1 class="display-4 mb-4">
+            <i class="fas fa-chart-line me-3"></i>Productivity Tracker
+        </h1>
+        <p class="lead mb-4">
+            Take control of your time and boost your productivity with our comprehensive task and time tracking solution.
+        </p>
+        <div class="d-flex gap-3 justify-content-center flex-wrap">
+            <a href="{{ url_for('register') }}" class="btn btn-light btn-lg">
+                <i class="fas fa-user-plus me-2"></i>Get Started
+            </a>
+            <a href="{{ url_for('login') }}" class="btn btn-outline-light btn-lg">
+                <i class="fas fa-sign-in-alt me-2"></i>Sign In
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <h2 class="mb-4">Why Choose Our Productivity Tracker?</h2>
+        
+        <div class="row g-4">
+            <div class="col-md-6">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center">
+                        <div class="feature-icon text-primary mb-3">
+                            <i class="fas fa-tasks fa-3x"></i>
+                        </div>
+                        <h5 class="card-title">Task Management</h5>
+                        <p class="card-text">
+                            Create, organize, and track your tasks with categories, priorities, and due dates.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center">
+                        <div class="feature-icon text-success mb-3">
+                            <i class="fas fa-stopwatch fa-3x"></i>
+                        </div>
+                        <h5 class="card-title">Time Tracking</h5>
+                        <p class="card-text">
+                            Track time spent on each task with our intuitive start/stop timer functionality.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center">
+                        <div class="feature-icon text-info mb-3">
+                            <i class="fas fa-chart-bar fa-3x"></i>
+                        </div>
+                        <h5 class="card-title">Analytics Dashboard</h5>
+                        <p class="card-text">
+                            Visualize your productivity with comprehensive charts and performance metrics.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center">
+                        <div class="feature-icon text-warning mb-3">
+                            <i class="fas fa-file-export fa-3x"></i>
+                        </div>
+                        <h5 class="card-title">Data Export</h5>
+                        <p class="card-text">
+                            Export your productivity data as PDF reports or CSV files for analysis.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card border-0 shadow">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-rocket me-2"></i>Get Started Today
+                </h5>
+            </div>
+            <div class="card-body">
+                <p class="card-text">
+                    Join thousands of users who have already improved their productivity with our platform.
+                </p>
+                
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('register') }}" class="btn btn-primary">
+                        <i class="fas fa-user-plus me-2"></i>Create Account
+                    </a>
+                    <a href="{{ url_for('login') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-sign-in-alt me-2"></i>Sign In
+                    </a>
+                </div>
+                
+                <hr>
+                
+                <h6 class="fw-bold">Key Features:</h6>
+                <ul class="list-unstyled small">
+                    <li><i class="fas fa-check text-success me-2"></i>Unlimited tasks and projects</li>
+                    <li><i class="fas fa-check text-success me-2"></i>Real-time time tracking</li>
+                    <li><i class="fas fa-check text-success me-2"></i>Detailed analytics</li>
+                    <li><i class="fas fa-check text-success me-2"></i>Data export capabilities</li>
+                    <li><i class="fas fa-check text-success me-2"></i>Responsive design</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-5">
+    <div class="col-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center py-5">
+                <h3 class="mb-3">Ready to Boost Your Productivity?</h3>
+                <p class="lead mb-4">
+                    Start tracking your tasks and time today. It's free and takes less than a minute to set up.
+                </p>
+                <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-arrow-right me-2"></i>Start Your Journey
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

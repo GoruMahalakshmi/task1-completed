@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+{% block title %}Categories - Productivity Tracker{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="fas fa-tags me-2"></i>Categories</h1>
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#categoryModal">
+        <i class="fas fa-plus me-2"></i>New Category
+    </button>
+</div>
+
+<div class="row">
+    {% if categories %}
+        {% for category in categories %}
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header d-flex align-items-center justify-content-between" style="background-color: {{ category.color }}; color: white;">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-tag me-2"></i>
+                        <h6 class="mb-0">{{ category.name }}</h6>
+                    </div>
+                    <div class="dropdown">
+                        <button class="btn btn-sm btn-outline-light" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-ellipsis-v"></i>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <button class="dropdown-item" onclick="editCategory({{ category.id }}, '{{ category.name }}', '{{ category.color }}')">
+                                    <i class="fas fa-edit me-2"></i>Edit
+                                </button>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <form method="POST" action="{{ url_for('delete_category', category_id=category.id) }}" class="d-inline" onsubmit="return confirmDelete('{{ category.name }}')">
+                                    <button type="submit" class="dropdown-item text-danger">
+                                        <i class="fas fa-trash me-2"></i>Delete
+                                    </button>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <h4 class="text-muted mb-1">{{ category.tasks | length }}</h4>
+                            <small class="text-muted">Tasks</small>
+                        </div>
+                        <div class="col-6">
+                            <h4 class="text-muted mb-1">
+                                {% set total_time = category.tasks | map(attribute='total_time_spent') | sum %}
+                                {{ "%.1f"|format(total_time / 3600) }}h
+                            </h4>
+                            <small class="text-muted">Time Spent</small>
+                        </div>
+                    </div>
+
+                    {% if category.tasks %}
+                        <hr>
+                        <h6 class="text-muted mb-2">Recent Tasks:</h6>
+                        <div class="task-list">
+                            {% for task in category.tasks[:3] %}
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="small">{{ task.title[:30] }}{{ '...' if task.title|length > 30 }}</span>
+                                <span class="badge bg-{{ 'success' if task.status == 'completed' else 'warning' if task.status == 'in_progress' else 'secondary' }}">
+                                    {{ task.status.replace('_', ' ').title() }}
+                                </span>
+                            </div>
+                            {% endfor %}
+                            {% if category.tasks|length > 3 %}
+                                <small class="text-muted">and {{ category.tasks|length - 3 }} more...</small>
+                            {% endif %}
+                        </div>
+                    {% else %}
+                        <div class="text-center text-muted py-3">
+                            <i class="fas fa-tasks fa-2x mb-2 opacity-50"></i>
+                            <p class="small mb-0">No tasks in this category yet</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="col-12">
+            <div class="card text-center py-5">
+                <div class="card-body">
+                    <i class="fas fa-tags fa-4x text-muted mb-3"></i>
+                    <h4>No Categories Yet</h4>
+                    <p class="text-muted mb-4">
+                        Categories help you organize your tasks and track time by project or area of focus.
+                    </p>
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#categoryModal">
+                        <i class="fas fa-plus me-2"></i>Create Your First Category
+                    </button>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Modal for Create/Edit Category -->
+<div class="modal fade" id="categoryModal" tabindex="-1" aria-labelledby="categoryModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" id="categoryForm">
+                {{ form.hidden_tag() }}
+                <div class="modal-header">
+                    <h5 class="modal-title" id="categoryModalLabel">
+                        <i class="fas fa-tag me-2"></i><span id="modalTitle">New Category</span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        {{ form.name.label(class="form-label") }}
+                        {{ form.name(class="form-control", id="categoryName") }}
+                        {% for error in form.name.errors %}
+                            <div class="text-danger small">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.color.label(class="form-label") }}
+                        <div class="d-flex align-items-center gap-3">
+                            {{ form.color(class="form-control form-control-color", id="categoryColor", style="width: 60px; height: 40px;") }}
+                            <div class="flex-grow-1">
+                                <label class="form-label small">Color Preview:</label>
+                                <div id="colorPreview" class="border rounded p-2 text-white text-center fw-bold" style="background-color: #007bff;">
+                                    Sample Category
+                                </div>
+                            </div>
+                        </div>
+                        {% for error in form.color.errors %}
+                            <div class="text-danger small">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    {{ form.submit(class="btn btn-primary", id="submitBtn") }}
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+let editingCategoryId = null;
+
+function updateColorPreview(color, name = 'Sample Category') {
+    const preview = document.getElementById('colorPreview');
+    preview.style.backgroundColor = color;
+    preview.textContent = name || 'Sample Category';
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    updateColorPreview('#007bff');
+    document.getElementById('categoryColor').addEventListener('change', function() {
+        updateColorPreview(this.value, document.getElementById('categoryName').value);
+    });
+    document.getElementById('categoryName').addEventListener('input', function() {
+        updateColorPreview(document.getElementById('categoryColor').value, this.value);
+    });
+});
+
+function editCategory(id, name, color) {
+    editingCategoryId = id;
+    document.getElementById('modalTitle').textContent = 'Edit Category';
+    document.getElementById('categoryName').value = name;
+    document.getElementById('categoryColor').value = color;
+    document.getElementById('submitBtn').textContent = 'Update Category';
+    document.getElementById('categoryForm').action = `/categories/${id}/edit`;
+    updateColorPreview(color, name);
+    const modal = new bootstrap.Modal(document.getElementById('categoryModal'));
+    modal.show();
+}
+
+document.getElementById('categoryModal').addEventListener('hidden.bs.modal', function() {
+    editingCategoryId = null;
+    document.getElementById('modalTitle').textContent = 'New Category';
+    document.getElementById('categoryName').value = '';
+    document.getElementById('categoryColor').value = '#007bff';
+    document.getElementById('submitBtn').textContent = 'Create Category';
+    document.getElementById('categoryForm').action = '{{ url_for("categories") }}';
+    updateColorPreview('#007bff');
+});
+
+function confirmDelete(categoryName) {
+    return confirm(`Are you sure you want to delete the "${categoryName}" category?`);
+}
+</script>
+{% endblock %}
+

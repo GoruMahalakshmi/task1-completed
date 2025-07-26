@@ -1,0 +1,254 @@
+{% extends "base.html" %}
+
+{% block title %}Analytics - Productivity Tracker{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>
+        <i class="fas fa-chart-bar me-2"></i>Analytics
+    </h1>
+    <div class="btn-group" role="group">
+        <button type="button" class="btn btn-outline-primary active" onclick="showPeriod('7d')">7 Days</button>
+        <button type="button" class="btn btn-outline-primary" onclick="showPeriod('30d')">30 Days</button>
+    </div>
+</div>
+
+<!-- Summary Statistics -->
+<div class="row mb-4" id="stats-7d">
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body text-center">
+                <i class="fas fa-tasks fa-2x mb-2"></i>
+                <h3 class="mb-1">{{ stats_7d.total_tasks }}</h3>
+                <p class="mb-0">Total Tasks</p>
+                <small class="opacity-75">Last 7 days</small>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card bg-success text-white">
+            <div class="card-body text-center">
+                <i class="fas fa-check-circle fa-2x mb-2"></i>
+                <h3 class="mb-1">{{ stats_7d.completed_tasks }}</h3>
+                <p class="mb-0">Completed</p>
+                <small class="opacity-75">{{ "%.1f"|format(stats_7d.completion_rate) }}% completion rate</small>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card bg-info text-white">
+            <div class="card-body text-center">
+                <i class="fas fa-clock fa-2x mb-2"></i>
+                <h3 class="mb-1">{{ "%.1f"|format(stats_7d.total_time_hours) }}</h3>
+                <p class="mb-0">Hours Tracked</p>
+                <small class="opacity-75">{{ "%.1f"|format(stats_7d.total_time_hours / 7) }}h/day average</small>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card bg-warning text-dark">
+            <div class="card-body text-center">
+                <i class="fas fa-chart-line fa-2x mb-2"></i>
+                <h3 class="mb-1">{{ stats_7d.tasks_by_status.in_progress }}</h3>
+                <p class="mb-0">In Progress</p>
+                <small class="opacity-75">Active tasks</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4" id="stats-30d" style="display: none;">
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body text-center">
+                <i class="fas fa-tasks fa-2x mb-2"></i>
+                <h3 class="mb-1">{{ stats_30d.total_tasks }}</h3>
+                <p class="mb-0">Total Tasks</p>
+                <small class="opacity-75">Last 30 days</small>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card bg-success text-white">
+            <div class="card-body text-center">
+                <i class="fas fa-check-circle fa-2x mb-2"></i>
+                <h3 class="mb-1">{{ stats_30d.completed_tasks }}</h3>
+                <p class="mb-0">Completed</p>
+                <small class="opacity-75">{{ "%.1f"|format(stats_30d.completion_rate) }}% completion rate</small>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card bg-info text-white">
+            <div class="card-body text-center">
+                <i class="fas fa-clock fa-2x mb-2"></i>
+                <h3 class="mb-1">{{ "%.1f"|format(stats_30d.total_time_hours) }}</h3>
+                <p class="mb-0">Hours Tracked</p>
+                <small class="opacity-75">{{ "%.1f"|format(stats_30d.total_time_hours / 30) }}h/day average</small>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card bg-warning text-dark">
+            <div class="card-body text-center">
+                <i class="fas fa-chart-line fa-2x mb-2"></i>
+                <h3 class="mb-1">{{ stats_30d.tasks_by_status.in_progress }}</h3>
+                <p class="mb-0">In Progress</p>
+                <small class="opacity-75">Active tasks</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row -->
+<div class="row mb-4">
+    <!-- Task Status Distribution -->
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-pie me-2"></i>Task Status Distribution
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="statusChart" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Task Priority Distribution -->
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-pie me-2"></i>Task Priority Distribution
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="priorityChart" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Time Tracking Charts -->
+<div class="row mb-4">
+    <!-- Time by Category -->
+    <div class="col-lg-8 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-bar me-2"></i>Time Spent by Category
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="categoryTimeChart" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Daily Activity -->
+    <div class="col-lg-4 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-line me-2"></i>Daily Activity
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="dailyChart" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Productivity Insights -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-lightbulb me-2"></i>Productivity Insights
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-trophy text-warning me-2"></i>Your Best Metrics</h6>
+                        <ul class="list-unstyled">
+                            <li class="mb-2">
+                                <i class="fas fa-check text-success me-2"></i>
+                                <strong>{{ "%.1f"|format(stats_7d.completion_rate) }}%</strong> task completion rate
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-clock text-info me-2"></i>
+                                <strong>{{ "%.1f"|format(stats_7d.total_time_hours / 7) }} hours</strong> average daily focus time
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-tasks text-primary me-2"></i>
+                                <strong>{{ stats_7d.total_tasks }}</strong> total tasks in the last week
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-target text-info me-2"></i>Areas for Improvement</h6>
+                        <ul class="list-unstyled">
+                            {% if stats_7d.completion_rate < 70 %}
+                            <li class="mb-2">
+                                <i class="fas fa-arrow-up text-warning me-2"></i>
+                                Consider breaking large tasks into smaller, manageable pieces
+                            </li>
+                            {% endif %}
+                            {% if stats_7d.total_time_hours < 20 %}
+                            <li class="mb-2">
+                                <i class="fas fa-clock text-warning me-2"></i>
+                                Try to increase your daily focus time for better productivity
+                            </li>
+                            {% endif %}
+                            {% if stats_7d.tasks_by_status.pending > stats_7d.tasks_by_status.in_progress %}
+                            <li class="mb-2">
+                                <i class="fas fa-play text-warning me-2"></i>
+                                Start working on pending tasks to maintain momentum
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/analytics.js') }}"></script>
+<script>
+// Initialize charts with data
+const stats7d = {{ stats_7d | tojson | safe }};
+const stats30d = {{ stats_30d | tojson | safe }};
+
+// Initialize analytics
+initializeAnalytics(stats7d, stats30d);
+
+function showPeriod(period) {
+    // Update button states
+    document.querySelectorAll('.btn-group .btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    event.target.classList.add('active');
+    
+    // Show/hide stats
+    document.getElementById('stats-7d').style.display = period === '7d' ? 'flex' : 'none';
+    document.getElementById('stats-30d').style.display = period === '30d' ? 'flex' : 'none';
+    
+    // Update charts
+    updateCharts(period === '7d' ? stats7d : stats30d);
+}
+</script>
+{% endblock %}

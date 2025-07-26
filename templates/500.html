@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+
+{% block title %}Server Error - Productivity Tracker{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6 text-center">
+        <div class="error-page">
+            <div class="error-code">
+                <h1 class="display-1 text-danger">500</h1>
+            </div>
+            
+            <div class="error-message">
+                <h2 class="mb-3">Internal Server Error</h2>
+                <p class="lead text-muted mb-4">
+                    Something went wrong on our end. We're working to fix this issue.
+                </p>
+            </div>
+            
+            <div class="error-actions">
+                <div class="d-flex gap-3 justify-content-center flex-wrap">
+                    <button onclick="window.location.reload()" class="btn btn-primary">
+                        <i class="fas fa-sync-alt me-2"></i>Try Again
+                    </button>
+                    {% if current_user.is_authenticated %}
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-tachometer-alt me-2"></i>Go to Dashboard
+                    </a>
+                    {% else %}
+                    <a href="{{ url_for('index') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-home me-2"></i>Go Home
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Error Details -->
+        <div class="card mt-5 border-danger">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-exclamation-triangle me-2"></i>What happened?
+                </h5>
+            </div>
+            <div class="card-body">
+                <p class="mb-3">
+                    A server error occurred while processing your request. This could be due to:
+                </p>
+                <div class="row text-start">
+                    <div class="col-md-6">
+                        <ul class="list-unstyled">
+                            <li class="mb-2">
+                                <i class="fas fa-times text-danger me-2"></i>
+                                Temporary server overload
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-times text-danger me-2"></i>
+                                Database connection issue
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <ul class="list-unstyled">
+                            <li class="mb-2">
+                                <i class="fas fa-times text-danger me-2"></i>
+                                Application malfunction
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-times text-danger me-2"></i>
+                                Configuration problem
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="alert alert-info mt-3">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>Don't worry!</strong> Your data is safe. Try refreshing the page or come back in a few minutes.
+                </div>
+            </div>
+        </div>
+        
+        <!-- Support Information -->
+        <div class="card mt-4 border-0 bg-light">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="fas fa-life-ring text-primary me-2"></i>Need Help?
+                </h5>
+                <p class="mb-3">
+                    If this error persists, here's what you can do:
+                </p>
+                <div class="row text-start">
+                    <div class="col-md-6">
+                        <ul class="list-unstyled">
+                            <li class="mb-2">
+                                <i class="fas fa-check text-success me-2"></i>
+                                Wait a few minutes and try again
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-check text-success me-2"></i>
+                                Clear your browser cache
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <ul class="list-unstyled">
+                            <li class="mb-2">
+                                <i class="fas fa-check text-success me-2"></i>
+                                Try using a different browser
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-check text-success me-2"></i>
+                                Report the issue to support
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.error-page {
+    padding: 3rem 0;
+}
+
+.error-code h1 {
+    font-size: 8rem;
+    font-weight: 300;
+}
+
+@media (max-width: 768px) {
+    .error-code h1 {
+        font-size: 5rem;
+    }
+    
+    .error-page {
+        padding: 2rem 0;
+    }
+}
+</style>
+
+<script>
+// Auto-refresh after 30 seconds
+setTimeout(function() {
+    const refreshBtn = document.querySelector('[onclick="window.location.reload()"]');
+    if (refreshBtn && confirm('Would you like to automatically retry loading the page?')) {
+        window.location.reload();
+    }
+}, 30000);
+
+// Add retry counter
+let retryCount = parseInt(sessionStorage.getItem('retryCount') || '0');
+if (retryCount < 3) {
+    sessionStorage.setItem('retryCount', (retryCount + 1).toString());
+} else {
+    // Show additional help after multiple retries
+    setTimeout(function() {
+        const alertDiv = document.createElement('div');
+        alertDiv.className = 'alert alert-warning mt-3';
+        alertDiv.innerHTML = `
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            <strong>Multiple errors detected.</strong> There might be a persistent issue. 
+            Consider clearing your browser data or trying again later.
+        `;
+        
+        const errorActions = document.querySelector('.error-actions');
+        if (errorActions) {
+            errorActions.parentNode.insertBefore(alertDiv, errorActions.nextSibling);
+        }
+    }, 2000);
+}
+
+// Clear retry count on successful navigation
+window.addEventListener('beforeunload', function() {
+    if (performance.navigation.type === performance.navigation.TYPE_NAVIGATE) {
+        sessionStorage.removeItem('retryCount');
+    }
+});
+</script>
+{% endblock %}
+
