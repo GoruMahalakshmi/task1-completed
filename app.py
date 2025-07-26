@@ -40,8 +40,6 @@ def create_app():
     
     with app.app_context():
         # Import models to ensure they're registered
-        # noqa: F401
-        
         # Create all database tables
         db.create_all()
         logging.info("Database tables created")
